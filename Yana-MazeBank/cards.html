@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Maze Bank — Картки</title>
+  <script src="/assets/js/scripthd.js"></script>
+  <link rel="stylesheet" href="/assets/styles/styles.css">
+  <style>
+
+  </style>
+</head>
+<body>
+    <header></header>
+  <h1>Maze Bank — Картки</h1>
+
+  <div id="cardList" class="card-container"></div>
+
+  <form id="newCardForm">
+    <label>Тип картки:
+      <select id="cardType">
+        <option value="Visa">Visa</option>
+        <option value="MasterCard">MasterCard</option>
+      </select>
+    </label>
+    <button type="submit">➕ Створити картку</button>
+  </form>
+
+  <form id="rechargeForm">
+    <label>Оберіть картку:
+      <select id="rechargeCardSelect"></select>
+    </label>
+    <label>Сума поповнення:
+      <input type="number" id="rechargeAmount" min="1" />
+    </label>
+    <button type="submit">💳 Поповнити</button>
+  </form>
+
+  <form id="transferForm">
+    <label>Відправник:
+      <select id="senderCardSelect"></select>
+    </label>
+    <label>Номер картки одержувача:
+      <input type="text" id="recipientCardNumber" placeholder="0000 0000 0000 0000" />
+    </label>
+    <label>Сума переказу:
+      <input type="number" id="transferAmount" min="1" />
+    </label>
+    <button type="submit">📤 Переказати</button>
+  </form>
+
+  <footer></footer>
+
+  <script>
+    const user = 'demo@maze.bank'; // Тимчасовий користувач для демонстрації
+
+    function generateCardNumber() {
+      return Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join('').match(/.{1,4}/g).join(' ');
+    }
+
+    function generateExpiry() {
+      const d = new Date();
+      return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear() + 4).slice(-2)}`;
+    }
+
+    function generateCVV() {
+      return String(Math.floor(100 + Math.random() * 900));
+    }
+
+    function getCards() {
+      return JSON.parse(localStorage.getItem('cards') || '[]');
+    }
+
+    function saveCards(cards) {
+      localStorage.setItem('cards', JSON.stringify(cards));
+    }
+
+    function renderCards() {
+      const cards = getCards().filter(c => c.owner === user);
+      const list = document.getElementById('cardList');
+      const selects = ['rechargeCardSelect', 'senderCardSelect'];
+
+      list.innerHTML = '';
+      selects.forEach(id => document.getElementById(id).innerHTML = '');
+
+      if (cards.length === 0) {
+        list.innerHTML = '<p>Немає активних карток</p>';
+        return;
+      }
+
+      cards.forEach((card, i) => {
+        const div = document.createElement('div');
+        div.className = 'card-display';
+        div.innerHTML = `
+          <h3>${card.type}</h3>
+          <p>Номер: ${card.number}</p>
+          <p>Баланс: ${card.balance.toFixed(2)} грн</p>
+          <p>Дійсна до: ${card.expiry}</p>
+          <p>CVV: ${card.cvv}</p>
+          <p><strong>Історія:</strong></p>
+          <ul>${(card.history || []).map(h => `<li>${h.date}: ${h.type} ${h.amount} грн ${h.target ? `➡ ${h.target}` : ''}</li>`).join('')}</ul>
+        `;
+        list.appendChild(div);
+
+        selects.forEach(id => {
+          const opt = document.createElement('option');
+          opt.value = card.number;
+          opt.textContent = `${card.type} •••• ${card.number.slice(-4)}`;
+          document.getElementById(id).appendChild(opt);
+        });
+      });
+    }
+
+    document.getElementById('newCardForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const type = document.getElementById('cardType').value;
+      const newCard = {
+        type,
+        number: generateCardNumber(),
+        expiry: generateExpiry(),
+        cvv: generateCVV(),
+        balance: 0,
+        owner: user,
+        history: []
+      };
+      const cards = getCards();
+      cards.push(newCard);
+      saveCards(cards);
+      renderCards();
+    });
+
+    document.getElementById('rechargeForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const number = document.getElementById('rechargeCardSelect').value;
+      const amount = parseFloat(document.getElementById('rechargeAmount').value);
+      if (!amount || amount <= 0) return alert('Некоректна сума');
+      const cards = getCards();
+      const card = cards.find(c => c.number === number && c.owner === user);
+      if (!card) return alert('Картку не знайдено');
+      card.balance += amount;
+      card.history.push({
+        type: 'Поповнення',
+        amount,
+        date: new Date().toLocaleString()
+      });
+      saveCards(cards);
+      renderCards();
+      e.target.reset();
+    });
+
+    document.getElementById('transferForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const senderNumber = document.getElementById('senderCardSelect').value;
+      const recipientNumber = document.getElementById('recipientCardNumber').value.trim();
+      const amount = parseFloat(document.getElementById('transferAmount').value);
+      if (!recipientNumber || recipientNumber.length < 16) return alert('Некоректний номер картки');
+      if (!amount || amount <= 0) return alert('Некоректна сума');
+
+      const cards = getCards();
+      const sender = cards.find(c => c.number === senderNumber && c.owner === user);
+      const recipient = cards.find(c => c.number === recipientNumber);
+
+      if (!sender) return alert('Відправника не знайдено');
+      if (sender.balance < amount) return alert('Недостатньо коштів');
+
+      sender.balance -= amount;
+      sender.history.push({
+        type: 'Переказ',
+        amount,
+        date: new Date().toLocaleString(),
+        target: recipientNumber
+      });
+
+      if (recipient) {
+        recipient.balance += amount;
+        recipient.history.push({
+          type: 'Отримано',
+          amount,
+          date: new Date().toLocaleString(),
+          target: senderNumber
+        });
+      }
+
+      saveCards(cards);
+      renderCards();
+      e.target.reset();
+    });
+
+    document.addEventListener('DOMContentLoaded', renderCards);
+  </script>
+</body>
+</html>

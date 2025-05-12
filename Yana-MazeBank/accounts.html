@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>🏦 Рахунки</title>
+  <link rel="stylesheet" href="/assets/styles/styles.css" />
+  <script src="/assets/js/scripthd.js"></script>        
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="widget"></div>
+  <header></header>
+
+  <main>
+    <h2>📋 Ваші рахунки</h2>
+    <table class="account-table">
+      <thead>
+        <tr>
+          <th>Тип</th>
+          <th>IBAN</th>
+          <th>Банк</th>
+          <th>Статус</th>
+          <th>Баланс</th>
+          <th>Дії</th>
+        </tr>
+      </thead>
+      <tbody id="accountList"></tbody>
+    </table>
+
+    <h3>➕ Створити рахунок</h3>
+    <form id="createAccountForm">
+      <label>Тип рахунку:
+        <select id="accountType">
+          <option value="Основний">Основний</option>
+          <option value="Депозит">Депозит</option>
+        </select>
+      </label>
+      <label>Початковий баланс:
+        <input type="number" id="initialAmount" min="0" step="0.01" required>
+      </label>
+      <button type="submit" class="action-btn">Створити</button>
+    </form>
+
+    <!--<h3>➕ Оформити кредит</h3>
+    <form id="loanForm">
+      <label>Сума кредиту:
+        <input type="number" id="loanAmount" min="0" step="0.01" required>
+      </label>
+      <button type="submit" class="action-btn">Оформити</button>
+    </form>
+
+    <h3 id="cardNumberDisplay" style="display:none;">Номер вашої картки: <span id="cardNumber"></span></h3>
+-->
+  </main>
+  <footer></footer>
+  <script src="script.js"></script>
+  <script>
+    function getAccounts() {
+      return JSON.parse(localStorage.getItem('accounts') || '[]');
+    }
+
+    function saveAccounts(accounts) {
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+    }
+
+    function generateIBAN() {
+      return 'UA' + Math.floor(1000000000000000000000000 + Math.random() * 9000000000000000000000000);
+    }
+
+    function generateCardNumber() {
+      return '4000 1234 5678 ' + Math.floor(1000 + Math.random() * 9000);
+    }
+
+    function getCurrentUser() {
+      return localStorage.getItem('currentUser');
+    }
+
+    function showAccounts() {
+      const user = getCurrentUser();
+      if (!user) {
+        alert('Будь ласка, увійдіть!');
+        location.href = 'index.html';
+        return;
+      }
+
+      const tbody = document.getElementById('accountList');
+      const accounts = getAccounts().filter(acc => acc.owner === user);
+      tbody.innerHTML = '';
+
+      accounts.forEach((acc, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${acc.type}</td>
+          <td>${acc.iban}</td>
+          <td>${acc.bank || 'MazeBank'}</td>
+          <td>${acc.status || 'Активний'}</td>
+          <td>${acc.balance.toFixed(2)} грн</td>
+          <td>
+            <button class="ghost" onclick="deleteAccount(${index})">🗑 Видалити</button>
+            <button class="ghost" onclick="closeAccount(${index})">🔒 Закрити</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function createAccount(e) {
+      e.preventDefault();
+      const user = getCurrentUser();
+      if (!user) {
+        alert('Будь ласка, увійдіть!');
+        location.href = 'index.html';
+        return;
+      }
+
+      const type = document.getElementById('accountType').value;
+      const amount = parseFloat(document.getElementById('initialAmount').value);
+      const accounts = getAccounts();
+
+      const iban = generateIBAN();
+      const cardNumber = generateCardNumber();
+      const newAccount = {
+        type,
+        iban,
+        bank: 'MazeBank',
+        status: 'Активний',
+        balance: amount,
+        owner: user,
+        cardNumber // Додаємо номер карти
+      };
+
+      accounts.push(newAccount);
+      saveAccounts(accounts);
+      showAccounts();
+      document.getElementById('createAccountForm').reset();
+      // Показуємо номер картки після створення рахунку
+      document.getElementById('cardNumberDisplay').style.display = 'block';
+      document.getElementById('cardNumber').textContent = cardNumber;
+    }
+
+    function deleteAccount(index) {
+      const accounts = getAccounts();
+      accounts.splice(index, 1);
+      saveAccounts(accounts);
+      showAccounts();
+    }
+
+    function closeAccount(index) {
+      const accounts = getAccounts();
+      accounts[index].status = 'Закритий';
+      saveAccounts(accounts);
+      showAccounts();
+    }
+
+    // Функція для оформлення кредиту
+function applyLoan(e) {
+  e.preventDefault();
+  
+  const user = getCurrentUser();
+  if (!user) {
+    alert('Будь ласка, увійдіть!');
+    location.href = 'index.html';
+    return;
+  }
+
+  const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+  if (isNaN(loanAmount) || loanAmount <= 0) {
+    alert('Будь ласка, введіть правильну суму кредиту.');
+    return;
+  }
+
+  const accounts = getAccounts();
+  const activeAccount = accounts.find(acc => acc.owner === user && acc.status === 'Активний');
+
+  if (activeAccount) {
+    activeAccount.balance += loanAmount; // Збільшуємо баланс на суму кредиту
+    saveAccounts(accounts); // Оновлюємо дані в localStorage
+    showAccounts(); // Оновлюємо відображення рахунків на сторінці
+    alert(`Кредит у розмірі ${loanAmount} грн було успішно нараховано на ваш рахунок!`);
+    document.getElementById('loanForm').reset();
+  } else {
+    alert('Немає активних рахунків для нарахування кредиту.');
+  }
+}
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      showAccounts();
+      showWidget();
+
+      document.getElementById('createAccountForm').addEventListener('submit', createAccount);
+      document.getElementById('loanForm').addEventListener('submit', applyLoan);
+
+      document.getElementById('logoutLink').addEventListener('click', () => {
+        localStorage.removeItem('currentUser');
+        location.href = 'index.html';
+      });
+    });
+  </script>
+</body>
+</html>

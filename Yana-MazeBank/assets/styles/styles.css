@@ -1,0 +1,250 @@
+:root {
+  --bg-dark: #0e0e0e;
+  --bg-light: #1a1a1a;
+  --text-light: #f4f4f4;
+  --text-muted: #aaa;
+  --accent: #1abc9c;
+  --accent-hover: #16a085;
+  --border: #333;
+  --white-bg: #fff;
+  --box-radius: 8px;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+/* === FEATURES GRID === */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.feature-item {
+  background-color: #222;
+  padding: 1.5rem;
+  border-radius: var(--box-radius);
+  text-align: center;
+  color: var(--text-light);
+  font-size: 1rem;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.05);
+  transition: transform 0.3s ease, background-color 0.3s;
+}
+
+.feature-item:hover {
+  background-color: #2c2c2c;
+  transform: translateY(-5px);
+}
+
+.action-hint {
+  margin-top: 2rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* === FOOTER === */
+footer {
+  background-color: var(--bg-light);
+  text-align: center;
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
+
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+nav {
+  background-color: var(--bg-light);
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+nav a {
+  color: var(--text-light);
+  text-decoration: none;
+  margin: 0 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background 0.3s, color 0.3s;
+}
+
+nav a:hover {
+  background-color: var(--accent);
+  color: #000;
+}
+
+h1, h2, h3 {
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 2rem;
+}
+
+section {
+  background-color: var(--bg-light);
+  border-radius: var(--box-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-section {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+.lead-text {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: var(--text-muted);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: #1b1b1b;
+  padding: 1.5rem;
+  border-radius: var(--box-radius);
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.1);
+}
+
+label {
+  font-weight: bold;
+}
+
+input, select, button {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #2a2a2a;
+  color: var(--text-light);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+button {
+  background-color: var(--accent);
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background-color: var(--accent-hover);
+}
+
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.card-display {
+  background: linear-gradient(145deg, #2e2e2e, #1c1c1c);
+  padding: 1.5rem;
+  width: 300px;
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+.card-display h3 {
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.account-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--white-bg);
+  color: #111;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.account-table th, .account-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.account-table th {
+  background-color: #f5f5f5;
+  text-align: left;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+#widget {
+  text-align: right;
+  margin: 1rem;
+  color: var(--accent);
+}
+
+@media (max-width: 600px) {
+  nav {
+    display: flex;
+    flex-direction: column;
+  }
+
+  nav a {
+    margin: 0.5rem 0;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

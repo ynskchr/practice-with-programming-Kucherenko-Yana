@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>📋 Шаблони</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/assets/styles/styles.css" />
+  <script src="/assets/js/scripthd.js"></script>        
+</head>
+<body>
+  <div id="widget"></div>
+
+  <header></header>
+
+  <main class="fade-in">
+    <h2>Збережені шаблони</h2>
+    <ul id="templateList"></ul>
+
+    <h3>➕ Додати шаблон</h3>
+    <form id="templateForm">
+      <label>Номер картки:
+        <input type="text" id="templateReceiver" required>
+      </label>
+      <label>Сума:
+        <input type="number" id="templateAmount" required>
+      </label>
+      <label>Призначення:
+        <input type="text" id="templatePurpose" required>
+      </label>
+      <button type="submit" class="action-btn">Зберегти</button>
+    </form>
+  </main>
+
+  <script>
+    function getCurrentUser() {
+      return localStorage.getItem('currentUser');
+    }
+
+    function showWidget() {
+      const email = getCurrentUser();
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.email === email);
+      const widget = document.getElementById('widget');
+      if (widget && user) {
+        widget.textContent = `👤 ${user.name}`;
+      }
+    }
+
+    function loadTemplates() {
+      const user = getCurrentUser();
+      return JSON.parse(localStorage.getItem(`templates_${user}`) || '[]');
+    }
+
+    function saveTemplates(templates) {
+      const user = getCurrentUser();
+      localStorage.setItem(`templates_${user}`, JSON.stringify(templates));
+    }
+
+    function showTemplates() {
+      const list = document.getElementById("templateList");
+      const templates = loadTemplates();
+      list.innerHTML = "";
+      if (templates.length === 0) {
+        list.innerHTML = "<li>Шаблонів поки немає</li>";
+        return;
+      }
+      templates.forEach((t, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${t.to}</strong> — ${t.amount} грн (${t.purpose})
+          <button class="ghost" onclick="deleteTemplate(${i})">🗑</button>`;
+        list.appendChild(li);
+      });
+    }
+
+    function deleteTemplate(index) {
+      const templates = loadTemplates();
+      templates.splice(index, 1);
+      saveTemplates(templates);
+      showTemplates();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const user = getCurrentUser();
+      if (!user) {
+        alert("Будь ласка, увійдіть!");
+        location.href = "index.html";
+        return;
+      }
+
+      showWidget();
+      showTemplates();
+
+      document.getElementById("logoutLink").addEventListener("click", () => {
+        localStorage.removeItem("currentUser");
+        location.href = "index.html";
+      });
+
+      document.getElementById("templateForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const newTemplate = {
+          to: document.getElementById("templateReceiver").value.trim(),
+          amount: parseFloat(document.getElementById("templateAmount").value),
+          purpose: document.getElementById("templatePurpose").value.trim()
+        };
+        
+        if (newTemplate.to === '' || newTemplate.amount <= 0 || newTemplate.purpose === '') {
+          alert("Заповніть всі поля коректно!");
+          return;
+        }
+
+        const templates = loadTemplates();
+        templates.push(newTemplate);
+        saveTemplates(templates);
+        showTemplates();
+        e.target.reset();
+      });
+    });
+  </script>
+</body>
+</html>

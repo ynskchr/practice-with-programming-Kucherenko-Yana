@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>Реєстрація</title>
+  <link rel="stylesheet" href="/assets/styles/styles.css" />
+  <script src="/assets/js/script.js"></script>   
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="widget"></div>
+  <h2>Форма реєстрації</h2>
+  <form id="registerForm">
+    <input type="text" placeholder="ПІБ" required name="name" />
+    <input type="email" placeholder="Емейл" required name="email" />
+    <input type="tel" placeholder="Телефон" required name="phone" />
+    <input type="password" placeholder="Пароль" required name="password" />
+    <input type="text" placeholder="Номер паспорта" required name="passport" maxlength="10" pattern="\d{10}" title="Номер паспорта повинен містити 10 цифр" />
+    <input type="date" placeholder="Дата народження" required name="dob" />
+    <button type="submit">Зареєструватись</button>
+    <p>Вже є акаунт? <a href="index.html">Увійти</a></p>
+  </form>
+  <footer></footer>
+  <script src="script.js"></script>
+</body>
+</html>

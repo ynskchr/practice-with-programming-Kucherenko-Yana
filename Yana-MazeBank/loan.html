@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Maze Bank — Кредити</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/assets/styles/styles.css">
+  <script src="/assets/js/scripthd.js"></script>
+</head>
+<body>
+  <div id="widget"></div>
+
+  <header></header>
+
+  <main class="fade-in">
+    <h2>Мої кредити</h2>
+    <div id="creditList"></div>
+
+    <h3>➕ Оформити новий кредит</h3>
+    <form id="loanForm">
+      <label>Сума:
+        <input type="number" id="loanAmount" required min="1000">
+      </label>
+      <label>Термін (місяців):
+        <input type="number" id="loanTerm" required min="1">
+      </label>
+      <label>Мета:
+        <input type="text" id="loanPurpose" required>
+      </label>
+      <button type="submit">Подати заявку</button>
+    </form>
+
+    <h3>📜 Історія платежів</h3>
+    <ul id="repaymentHistory"></ul>
+  </main>
+
+  <script>
+    function getCurrentUser() {
+      return localStorage.getItem("currentUser");
+    }
+
+    function getLoans() {
+      const user = getCurrentUser();
+      return JSON.parse(localStorage.getItem(`loans_${user}`) || "[]");
+    }
+
+    function saveLoans(loans) {
+      const user = getCurrentUser();
+      localStorage.setItem(`loans_${user}`, JSON.stringify(loans));
+    }
+
+    function renderLoans() {
+      const list = document.getElementById("creditList");
+      const loans = getLoans();
+      list.innerHTML = "";
+
+      if (loans.length === 0) {
+        list.innerHTML = "<p>Кредитів ще немає</p>";
+        return;
+      }
+
+      loans.forEach((loan, index) => {
+        const div = document.createElement("div");
+        div.className = "loan-card";
+        div.innerHTML = `
+          <h4>Кредит №${index + 1}</h4>
+          <p>Сума: ${loan.amount} грн</p>
+          <p>Термін: ${loan.term} міс.</p>
+          <p>Мета: ${loan.purpose}</p>
+          <p>Стан: ${loan.paid ? "Погашено" : "Активний"}</p>
+          <button onclick="repayLoan(${index})" ${loan.paid ? "disabled" : ""}>💸 Погасити</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function renderHistory() {
+      const user = getCurrentUser();
+      const history = JSON.parse(localStorage.getItem(`loanHistory_${user}`) || "[]");
+      const ul = document.getElementById("repaymentHistory");
+      ul.innerHTML = "";
+
+      if (history.length === 0) {
+        ul.innerHTML = "<li>Платежів ще не було</li>";
+        return;
+      }
+
+      history.forEach(h => {
+        const li = document.createElement("li");
+        li.textContent = `${h.date} — Погашено ${h.amount} грн (Кредит №${h.loanIndex + 1})`;
+        ul.appendChild(li);
+      });
+    }
+
+    function repayLoan(index) {
+      const user = getCurrentUser();
+      const loans = getLoans();
+      if (!loans[index] || loans[index].paid) return;
+
+      loans[index].paid = true;
+      saveLoans(loans);
+
+      const history = JSON.parse(localStorage.getItem(`loanHistory_${user}`) || "[]");
+      history.push({
+        loanIndex: index,
+        amount: loans[index].amount,
+        date: new Date().toLocaleDateString("uk-UA")
+      });
+      localStorage.setItem(`loanHistory_${user}`, JSON.stringify(history));
+
+      renderLoans();
+      renderHistory();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const user = getCurrentUser();
+      if (!user) {
+        alert("Будь ласка, увійдіть");
+        location.href = "index.html";
+        return;
+      }
+
+      renderLoans();
+      renderHistory();
+
+      document.getElementById("loanForm").addEventListener("submit", e => {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById("loanAmount").value);
+        const term = parseInt(document.getElementById("loanTerm").value);
+        const purpose = document.getElementById("loanPurpose").value;
+
+        const newLoan = { amount, term, purpose, paid: false };
+        const loans = getLoans();
+        loans.push(newLoan);
+        saveLoans(loans);
+
+        e.target.reset();
+        renderLoans();
+      });
+    });
+  </script>
+</body>
+</html>
